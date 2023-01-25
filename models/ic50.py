@@ -11,6 +11,7 @@ def formula(X, A, B, C):
     return A / (1 + (X / C)**B)
 
 
+# The formula that will be used to determine IC50 from the derived parameters. 
 def formula_inverted(Y_mid, A, B, C):
     return (A / Y_mid - 1)**(1/B) * C
 
