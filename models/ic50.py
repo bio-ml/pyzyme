@@ -32,7 +32,7 @@ model_predictions = formula(x, *fitted_params)
 abs_error = y - model_predictions
 std_err = np.square(abs_error)
 MSE = np.mean(std_err)
-Rsquared = 1.0 - (np.var(abs_error) / np.var(y))
+R2 = 1.0 - (np.var(abs_error) / np.var(y))
 
 # Uses a very large number to find roughly the upper bound for Y. Can probably be improved mathematically. 
 y_mean = formula(1000000, *fitted_params) / 2
