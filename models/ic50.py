@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize
+import matplotlib.pyplot as plt
 
 # Sample numbers, somewhat loggy
 x = np.array([10, 8, 9, 4, 6, 1, 3])
@@ -43,5 +44,11 @@ ic50_from_plot = formula_inverted(y_mean, *fitted_params)
 
 ic50_calc = fitted_params[2]
 
+#plotting
+plt.scatter(x, y)
+plt.plot(x, model_predictions)
+plt.show() 
+
 print(f'The IC50 occurs at {np.round(ic50_calc, 2)} units of x. The R squared of the regression is {np.round(R2, 2)}.')
+return fitted_params
 
