@@ -9,7 +9,7 @@ y = np.array([0.9, 0.85, 0.88, 0.5, 0.7, .1, .2])
 
 # Use of a three parameter model here sets the min at zero.
 def formula(X, max_y, hill_coeff, ic50):
-    return max_y / (1 + (X / ic50)**hill_coeff)
+    return max_y / (1 + (X / ic50)**(-hill_coeff))
 
 
 # The formula that will be used to determine IC50 from the derived parameters. 
