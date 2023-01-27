@@ -69,6 +69,12 @@ class IC50:
         plt.plot(x_vals, y_preds)
         plt.show()
 
+    # Allows the user to enter a single value or a list to obtain predicted y value(s).
+    def predict(self, user_input):
+        fitted_params = self.fit()
+        prediction = self.formula(user_input, *fitted_params)
+        return prediction
+
 
 # Sample numbers, somewhat loggy
 x = [10, 8, 9, 4, 6, 1, 3]
@@ -78,4 +84,5 @@ example = IC50(x, y)
 print(example.ic50_val())
 print(example.accuracy_metrics())
 print(example.parameters())
+print(example.predict(np.array([2, 3, 4])))
 example.chart()
