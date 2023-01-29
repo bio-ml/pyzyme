@@ -95,7 +95,6 @@ class IC50:
         if return_values:
             return prediction
 
-'''
 # Sample numbers, somewhat loggy
 x = [10, 8, 9, 4, 6, 1, 3]
 y = [0.9, 0.85, 0.88, 0.5, 0.7, .1, .2]
@@ -106,4 +105,3 @@ print(example.accuracy_metrics())
 print(example.parameters())
 print(example.predict(np.array([2, 3, 4])))
 example.chart()
-'''
