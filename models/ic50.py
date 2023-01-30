@@ -27,25 +27,23 @@ class IC50:
         predictions = self.formula(self.x, *init_params)
         return sum((self.y - predictions) ** 2)
 
-    # Four-parameter function to calculate independent variable given response values
-    def predict_x(self, Y, min_y, max_y, hill_coeff, ic50):
-        return ic50 * np.power(((max_y - min_y)/(Y - min_y) - 1),(1/hill_coeff))
-
-    # Currently, returns R-squared value of the determined regression.
-    def accuracy_metrics(self, verbose=True):
+    # Returns R-squared value of the determined regression.
+    def r_2(self, verbose=True):
         model_predictions = self.formula(self.x, *self.fitted_params)
         abs_error = self.y - model_predictions
-        std_err = np.square(abs_error)
-        MSE = np.mean(std_err)
-        R2 = 1.0 - (np.var(abs_error) / np.var(self.y))
+        r2 = 1.0 - (np.var(abs_error) / np.var(self.y))
         if verbose:
-            return 'The R-squared value of the regression is ' + str(np.round(R2, 5)) + '.'
+            return 'The R-squared value of the regression is ' + str(np.round(r2, 5)) + '.'
         else:
-            return str(np.round(R2, 5))
+            return str(np.round(r2, 5))
 
     # Returns the value for the calculated IC50.
-    def ic50_val(self):
-        return self.fitted_params[3]
+    def ic50_val(self, verbose=True):
+        ic50 = self.fitted_params[3]
+        if verbose:
+            return 'The IC50 value of the regression is ' + str(np.round(ic50, 5)) + '.'
+        else:
+            return np.round(ic50, 5)
 
     # Cleans up the parameters, labels them, and returns them.
     def parameters(self):
@@ -67,33 +65,31 @@ class IC50:
         # Plotting the regression.
         x_vals = np.arange(min(self.x), max(self.x), 0.1)
         y_preds = self.formula(x_vals, *self.fitted_params)
-        plt.plot(x_vals, y_preds, label=f'R2: {self.accuracy_metrics(verbose=False)}\n IC50: {np.round(self.ic50_val(), 3)}')
+        plt.plot(x_vals, y_preds, label=f'R2: {self.r_2(verbose=False)}\n IC50: {np.round(self.ic50_val(verbose=False), 3)}')
         plt.title('4 parameter logistic fit')
         plt.xlabel('x-units')
         plt.ylabel('y-units')
         plt.legend()
-        plt.show()
+        return plt
 
     # Allows the user to enter a single value or a list to obtain predicted y value(s).
-    def predict(self, user_input, return_values=True):
-        prediction = self.predict_x(user_input, *self.fitted_params)
+    def predict(self, user_input):
+        prediction = self.formula(user_input, *self.fitted_params)
+        return prediction
 
-        #plot standard curve with regression
-        plt.scatter(self.x, self.y)
-        x_vals = np.arange(min(self.x), max(self.x), 0.1)
-        y_preds = self.formula(x_vals, *self.fitted_params)
-        plt.plot(x_vals, y_preds)
+    # Allows the user to add values of their own to the plotted regression.
+    def chart_predictions(self, user_input):
+        predictions = self.predict(user_input)
 
-        #plot predicted values
-        plt.scatter(prediction, user_input, c='r', s=20)
+        # Calls the plotted regression and adds the user input predictions.
+        self.chart()
+        plt.scatter(user_input, predictions, c='r', s=50)
         plt.title('4 parameter logistic fit')
         plt.xlabel('x-units')
         plt.ylabel('y-units')
         plt.show()
-        
-        #return predicted x values if user desired
-        if return_values:
-            return prediction
+        return self
+
 
 # Sample numbers, somewhat loggy
 x = [10, 8, 9, 4, 6, 1, 3]
@@ -101,7 +97,8 @@ y = [0.9, 0.85, 0.88, 0.5, 0.7, .1, .2]
 
 example = IC50(x, y)
 print(example.ic50_val())
-print(example.accuracy_metrics())
+print(example.r_2())
 print(example.parameters())
-print(example.predict(np.array([2, 3, 4])))
-example.chart()
+print(example.predict(np.array([1, 3, 4])))
+example.chart_predictions(np.array([1, 3, 4]))
+#example.chart().show()
