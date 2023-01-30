@@ -27,14 +27,21 @@ class IC50:
         predictions = self.formula(self.x, *init_params)
         return sum((self.y - predictions) ** 2)
 
+    # Four-parameter function to calculate independent variable given response values
+    def predict_x(self, Y, min_y, max_y, hill_coeff, ic50):
+        return ic50 * np.power(((max_y - min_y)/(Y - min_y) - 1),(1/hill_coeff))
+
     # Currently, returns R-squared value of the determined regression.
-    def accuracy_metrics(self):
+    def accuracy_metrics(self, verbose=True):
         model_predictions = self.formula(self.x, *self.fitted_params)
         abs_error = self.y - model_predictions
         std_err = np.square(abs_error)
         MSE = np.mean(std_err)
-        R2 = 1.0 - (np.var(abs_error) / np.var(y))
-        return 'The R-squared value of the regression is ' + str(np.round(R2, 2)) + '.'
+        R2 = 1.0 - (np.var(abs_error) / np.var(self.y))
+        if verbose:
+            return 'The R-squared value of the regression is ' + str(np.round(R2, 5)) + '.'
+        else:
+            return str(np.round(R2, 5))
 
     # Returns the value for the calculated IC50.
     def ic50_val(self):
@@ -58,16 +65,35 @@ class IC50:
         plt.scatter(self.x, self.y)
 
         # Plotting the regression.
-        x_vals = np.arange(0.1, max(self.x)+1, 0.1)
+        x_vals = np.arange(min(self.x), max(self.x), 0.1)
         y_preds = self.formula(x_vals, *self.fitted_params)
-        plt.plot(x_vals, y_preds)
+        plt.plot(x_vals, y_preds, label=f'R2: {self.accuracy_metrics(verbose=False)}\n IC50: {np.round(self.ic50_val(), 3)}')
+        plt.title('4 parameter logistic fit')
+        plt.xlabel('x-units')
+        plt.ylabel('y-units')
+        plt.legend()
         plt.show()
 
     # Allows the user to enter a single value or a list to obtain predicted y value(s).
-    def predict(self, user_input):
-        prediction = self.formula(user_input, *self.fitted_params)
-        return prediction
+    def predict(self, user_input, return_values=True):
+        prediction = self.predict_x(user_input, *self.fitted_params)
 
+        #plot standard curve with regression
+        plt.scatter(self.x, self.y)
+        x_vals = np.arange(min(self.x), max(self.x), 0.1)
+        y_preds = self.formula(x_vals, *self.fitted_params)
+        plt.plot(x_vals, y_preds)
+
+        #plot predicted values
+        plt.scatter(prediction, user_input, c='r', s=20)
+        plt.title('4 parameter logistic fit')
+        plt.xlabel('x-units')
+        plt.ylabel('y-units')
+        plt.show()
+        
+        #return predicted x values if user desired
+        if return_values:
+            return prediction
 
 # Sample numbers, somewhat loggy
 x = [10, 8, 9, 4, 6, 1, 3]
