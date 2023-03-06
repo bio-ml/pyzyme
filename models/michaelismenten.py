@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
@@ -9,8 +10,26 @@ class michaelisMenten:
     and returns Km and Vmax.
     '''
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        if isinstance(y, pd.DataFrame):
+            if y.shape[1] > 1:
+                self.x = x.to_numpy()
+                self.y = y.mean(axis=1).to_numpy()
+                self.stand_dev = y.std(axis=1).to_numpy()
+            
+            else:
+                self.x = x.to_numpy()
+                self.y = y.to_numpy()
+                self.stand_dev = np.array(False)
+                
+        elif isinstance(x, np.ndarray):
+            self.x = x
+            self.y = y
+            self.stand_dev = np.array(False)
+
+        else:
+            self.x = np.array(x)
+            self.y = np.array(y)
+            self.stand_dev = np.array(False)
 
         #Predict likely initial parameters
         self.Km_guess = np.median(self.x)
@@ -43,12 +62,18 @@ class michaelisMenten:
 
     def chart(self, x_labels=None, y_labels=None, plot_title=None):
     #plot raw data
-        plt.scatter(self.x, self.y)
+        plt.scatter(self.x, self.y, c='k')
 
         #plot regression
         x_values = np.arange(np.min(self.x), np.max(self.x), 0.1)
         y_values = self.formula(x_values, *self.fitted_params)
-        plt.plot(x_values, y_values, label=f'Km: {self.fitted_params[1]} \n Vmax: {self.fitted_params[0]}')
+        if self.stand_dev.any():
+            plt.plot(x_values, y_values, c='k',
+                      label=f'Km: {self.fitted_params[1]} \n Vmax: {self.fitted_params[0]}')
+            plt.errorbar(self.x, self.y, yerr=self.stand_dev, ecolor='k', ls='none')
+        else:
+            plt.plot(x_values, y_values, c='k',
+                     label=f'Km: {self.fitted_params[1]} \n Vmax: {self.fitted_params[0]}')
         if plot_title:
             plt.title(plot_title)
         if x_labels:
@@ -58,10 +83,29 @@ class michaelisMenten:
         plt.legend()
         plt.show()
 
-#example
+#examples
+#sample array data
 x_test = np.array([5, 10, 20, 40, 80])
 y_test = np.array([9.6, 16.56, 22.646, 27.180, 30.178])
 
-#create instance
-model = michaelisMenten(x_test, y_test)
-model.chart('[substrate]', 'Rate (mOD/min)')
+#sample list data
+x_list_test = [5, 10, 20, 40, 80]
+y_list_test = [9.6, 16.56, 22.646, 27.180, 30.178]
+
+#sample DataFrame data
+x_test = np.array([5, 10, 20, 40, 80])
+y_test = np.array([9.6, 16.56, 22.646, 27.180, 30.178])
+#create a second y value with added noise
+rng = np.random.RandomState(42)
+noise = rng.uniform(-1, 2, 5)
+y_test2 = y_test + noise
+
+#create Dataframe
+df = pd.DataFrame({'x_test': x_test, 'y_test': y_test,
+                  'y_test2': y_test2})
+
+#plt.scatter(x, y)
+
+#create class
+model = michaelisMenten(df['x_test'], df[['y_test', 'y_test2']])
+model.chart('substrate', 'Rate (mOD/min)')
