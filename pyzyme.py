@@ -3,6 +3,31 @@ import pandas as pd
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 
+class BasePlot:
+    '''
+    Base class to define plotting for all functions. 
+    x: x values from parent class
+    y: y values from parent class
+    formula: formula from parent class
+    fitted_params: fitted_params from parent class
+    '''
+    def __init__(self, x, y, formula, fitted_params): 
+        self.x = x
+        self.y = y
+        self.formula = formula
+        self.fitted_params = fitted_params
+        
+        
+    def chart(self):
+        plt.scatter(self.x, self.y, c='k')
+        
+        #plot regression
+        x_values = np.arange(np.min(self.x), np.max(self.x), 0.1)
+        y_values = self.formula(x_values, *self.fitted_params)
+        
+        plt.plot(x_values, y_values)
+        plt.show()
+
 
 class FourParameterLogistic:
     '''
@@ -280,7 +305,10 @@ class SubstrateInhibition:
         result = minimize(self.RSS, initial_predictions, method='Powell')
         self.fitted_params = result.x
 
-    # Four-parameter function to calculate substrate inhibition.
+        #initialize plotting
+        BasePlot(self.x, self.y, self.formula, self.fitted_params )
+
+    # Function to calculate substrate inhibition.
     def formula(self, X, Vmax, Km, Ki):
         return (Vmax * X) / (Km + X * (1 + X / Ki))
 
@@ -289,6 +317,7 @@ class SubstrateInhibition:
         predictions = self.formula(self.x, *init_params)
         return sum((self.y - predictions) ** 2)
 
+    # Return Vmax, Km, and Ki
     def parameters(self):
         Vmax = np.round(self.fitted_params[0], 2)
         Km = np.round(self.fitted_params[1], 2)
